@@ -1,0 +1,77 @@
+---
+- name: Converge
+  hosts: all
+  become: true
+
+  pre_tasks:
+    - name: Update APT Cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 600
+      register: result
+      until: result is succeeded
+      when: ansible_os_family == 'Debian'
+
+    - name: Include Filebeat intall
+      when: "'molecule-idempotence-notest' not in ansible_skip_tags"
+      block:
+        # HACK: path is not consistent between ansible versions...
+        - name: Include vars of defaults/main.yml
+          ansible.builtin.include_vars:
+            dir: "{{ item.root }}/{{ item.path }}"
+          vars:
+            params:
+              files:
+                - filebeat
+              paths: "{{ ['roles'] + lookup('config', 'DEFAULT_ROLES_PATH') }}"
+          with_community.general.filetree: "{{ lookup('first_found', params) }}"
+          when: item.state == 'directory' and item.path in ['defaults', 'vars']
+
+        - name: Include Filebeat intall
+          ansible.builtin.include_role:
+            name: filebeat
+          vars:
+            _filebeat_install: "{{ _filebeat_6 }}"
+
+    # skip idempotence tests
+    - name: Prepare Dummy SSL Key / Certifcate
+      when: "'molecule-idempotence-notest' not in ansible_skip_tags"
+      delegate_to: localhost
+      block:
+        # Required for community.crypto.openssl_privatekey / x509_certificate
+        - name: Install cryptography python package
+          ansible.builtin.pip:
+            name: cryptography
+
+        - name: Include vars of defaults/main.yml
+          ansible.builtin.include_vars:
+            file: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/defaults/main.yml"
+            name: _defaults
+
+        - name: Create files/etc/filebeat/ssl directory
+          ansible.builtin.file:
+            path: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/files/etc/filebeat/ssl/"
+            state: directory
+            recurse: true
+            mode: "0755"
+
+        - name: Generate etc/filebeat/ssl/client.key
+          community.crypto.openssl_privatekey:
+            path: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/files/etc/filebeat/ssl/client.key"
+            passphrase: "{{ _defaults._filebeat.ssl.key_passphrase }}"
+            size: 2048
+            cipher: auto
+            mode: "0644"
+
+        - name: Generate etc/filebeat/ssl/client.crt
+          community.crypto.x509_certificate:
+            path: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/files/etc/filebeat/ssl/client.crt"
+            privatekey_path: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/files/etc/filebeat/ssl/client.key"
+            privatekey_passphrase: "{{ _defaults._filebeat.ssl.key_passphrase }}"
+            provider: selfsigned
+            mode: "0644"
+
+  tasks:
+    - name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+      ansible.builtin.include_role:
+        name: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
