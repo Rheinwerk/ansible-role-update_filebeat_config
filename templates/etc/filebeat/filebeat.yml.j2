@@ -30,8 +30,8 @@ logging.files:
 # "publish", "service".
 #logging.selectors: ["*"]
 
-#=========================== Filebeat prospectors =============================
-filebeat.prospectors:
+#=========================== Filebeat inputs =============================
+filebeat.inputs:
 # Closes file handles after this time, regardless of progress.
 # If there is more data to be processed, it will re-open the file and
 # continue, if it still exists. This ensures rotated / deleted file
@@ -39,10 +39,10 @@ filebeat.prospectors:
 # not delivered fully. While this can cause some log events to be lost
 # if the Logstash server wasn't available for a long time, it prevents
 # the client's disks from filling up with invisible files.
-{{ ( (_filebeat.prospectors|default([]) ) + (_filebeat.default_prospectors|default([])) )|map("combine",{"close_timeout":(_filebeat.default_shipper|combine(_filebeat.shipper)).close_timeout})|list|to_nice_yaml }}
+{{ ( (_filebeat.inputs|default([]) ) + (_filebeat.default_inputs|default([])) )|map("combine",{"close_timeout":(_filebeat.default_shipper|combine(_filebeat.shipper)).close_timeout})|list|to_nice_yaml }}
 
 #=========================== Filebeat processors ==============================
-# Processors work on events, created by the prospectors.
+# Processors work on events, created by the inputs.
 {% set PROCESSORS = ( (_filebeat.processors|default([])) + (_filebeat.default_processors|default([])) ) %}
 {% if PROCESSORS|length %}
 processors:
