@@ -1,4 +1,4 @@
-Filebeat 6 config update
+Filebeat 7 config update
 =========
 
 This role can be used to update a filebeat config, e. g. early in the

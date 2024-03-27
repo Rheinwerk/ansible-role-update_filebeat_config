@@ -31,7 +31,7 @@
           ansible.builtin.include_role:
             name: filebeat
           vars:
-            _filebeat_install: "{{ _filebeat_6 }}"
+            _filebeat_install: "{{ _filebeat_7 }}"
 
     # skip idempotence tests
     - name: Prepare Dummy SSL Key / Certifcate

@@ -10,7 +10,7 @@ _filebeat:
     fields:
       domain: "localdomain"
     close_timeout: "36h"
-  default_prospectors:
+  default_inputs:
     - input_type: log
       fields_under_root: true
       fields:
