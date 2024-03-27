@@ -1,0 +1,3 @@
+- src: https://github.com/Rheinwerk/ansible-role-filebeat.git
+  name: filebeat
+  scm: git

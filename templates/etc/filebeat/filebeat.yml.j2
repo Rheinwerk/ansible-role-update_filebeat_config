@@ -1,0 +1,64 @@
+#================================ General =====================================
+
+# The name of the shipper that publishes the network data. It can be used to group
+# all the transactions sent by a single shipper in the web interface.
+name: {{ _filebeat.shipper.name }}
+
+# The tags of the shipper are included in their own field with each
+# transaction published.
+#tags: ["service-X", "web-tier"]
+
+# Optional fields that you can specify to add additional information to the
+# output.
+fields_under_root: true
+fields: {{ (_filebeat.default_shipper.fields|default({}))|combine(_filebeat.shipper.fields|default({}))|to_yaml }}
+
+#================================ Logging =====================================
+
+# Sets log level. The default log level is info.
+# Available log levels are: critical, error, warning, info, debug
+logging.level: info
+logging.to_syslog: false
+logging.to_files: true
+logging.files:
+  path: /var/log
+  name: filebeat.log
+  keepfiles: 7
+
+# At debug level, you can selectively enable logging only for some components.
+# To enable all selectors use ["*"]. Examples of other selectors are "beat",
+# "publish", "service".
+#logging.selectors: ["*"]
+
+#=========================== Filebeat prospectors =============================
+filebeat.prospectors:
+# Closes file handles after this time, regardless of progress.
+# If there is more data to be processed, it will re-open the file and
+# continue, if it still exists. This ensures rotated / deleted file
+# handles are released after this time, even if their contents was
+# not delivered fully. While this can cause some log events to be lost
+# if the Logstash server wasn't available for a long time, it prevents
+# the client's disks from filling up with invisible files.
+{{ ( (_filebeat.prospectors|default([]) ) + (_filebeat.default_prospectors|default([])) )|map("combine",{"close_timeout":(_filebeat.default_shipper|combine(_filebeat.shipper)).close_timeout})|list|to_nice_yaml }}
+
+#=========================== Filebeat processors ==============================
+# Processors work on events, created by the prospectors.
+{% set PROCESSORS = ( (_filebeat.processors|default([])) + (_filebeat.default_processors|default([])) ) %}
+{% if PROCESSORS|length %}
+processors:
+{{ PROCESSORS|to_nice_yaml }}
+{% endif %}
+
+
+#================================ Outputs =====================================
+
+#----------------------------- Logstash output --------------------------------
+output.logstash:
+  # The Logstash hosts
+  hosts: {{ _filebeat.outputs.logstash.hosts|to_yaml }}
+
+  # List of root certificates for HTTPS server verifications
+  ssl.certificate: "/etc/filebeat/ssl/client.crt"
+  ssl.key: "/etc/filebeat/ssl/client.key"
+  ssl.key_passphrase: "{{ _filebeat.ssl.key_passphrase }}"
+

@@ -1,0 +1,31 @@
+---
+_filebeat:
+  outputs:
+    logstash:
+      hosts:
+        - "localhost:5044"
+  ssl:
+    key_passphrase: "Lorem-ipsum-dolor-sit-amet"
+  default_shipper:
+    fields:
+      domain: "localdomain"
+    close_timeout: "36h"
+  default_prospectors:
+    - input_type: log
+      fields_under_root: true
+      fields:
+        type: syslog
+      paths:
+        - "/var/log/*.log"
+        - "/var/log/*.log.?"
+        - "/var/log/syslog"
+        - "/var/log/syslog.?"
+      exclude_files:
+        - '^/var/log/filebeat\.log.*$'
+  default_processors: []
+  shipper:
+    name: "{{ ansible_hostname }}"
+  processors:
+    # https://www.elastic.co/guide/en/beats/libbeat/6.3/breaking-changes-6.3.html
+    - drop_fields:
+        fields: ["host"]
