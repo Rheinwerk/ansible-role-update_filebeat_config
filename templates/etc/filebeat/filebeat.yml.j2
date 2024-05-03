@@ -39,7 +39,7 @@ filebeat.inputs:
 # not delivered fully. While this can cause some log events to be lost
 # if the Logstash server wasn't available for a long time, it prevents
 # the client's disks from filling up with invisible files.
-{{ ( (_filebeat.inputs|default([]) ) + (_filebeat.default_inputs|default([])) )|map("combine",{"close_timeout":(_filebeat.default_shipper|combine(_filebeat.shipper)).close_timeout})|list|to_nice_yaml }}
+{{ ( (_filebeat.inputs|default([]) ) + (_filebeat.default_inputs|default([])) )|map("combine",{"close.reader.after_interval":(_filebeat.default_shipper|combine(_filebeat.shipper)).close.reader.after_interval})|list|to_nice_yaml }}
 
 #=========================== Filebeat processors ==============================
 # Processors work on events, created by the inputs.

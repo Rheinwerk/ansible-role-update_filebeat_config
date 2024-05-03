@@ -9,9 +9,12 @@ _filebeat:
   default_shipper:
     fields:
       domain: "localdomain"
-    close_timeout: "36h"
+    close:
+      reader:
+        after_interval: "36h"
   default_inputs:
-    - input_type: log
+    - type: filestream
+      id: syslog
       fields_under_root: true
       fields:
         type: syslog
@@ -20,8 +23,10 @@ _filebeat:
         - "/var/log/*.log.?"
         - "/var/log/syslog"
         - "/var/log/syslog.?"
-      exclude_files:
-        - '^/var/log/filebeat\.log.*$'
+      prospector:
+        scanner:
+          exclude_files:
+            - '^/var/log/filebeat\.log.*$'
   default_processors: []
   shipper:
     name: "{{ ansible_hostname }}"
