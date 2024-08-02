@@ -11,7 +11,7 @@ name: {{ _filebeat.shipper.name }}
 # Optional fields that you can specify to add additional information to the
 # output.
 fields_under_root: true
-fields: {{ (_filebeat.default_shipper.fields|default({}))|combine(_filebeat.shipper.fields|default({}))|to_yaml }}
+fields: {{ (_filebeat.default_shipper.fields | default({})) | combine(_filebeat.shipper.fields | default({})) | to_yaml }}
 
 #================================ Logging =====================================
 
@@ -39,14 +39,26 @@ filebeat.inputs:
 # not delivered fully. While this can cause some log events to be lost
 # if the Logstash server wasn't available for a long time, it prevents
 # the client's disks from filling up with invisible files.
-{{ ( (_filebeat.inputs|default([]) ) + (_filebeat.default_inputs|default([])) )|map("combine",{"close.reader.after_interval":(_filebeat.default_shipper|combine(_filebeat.shipper)).close.reader.after_interval})|list|to_nice_yaml }}
+{{ ( (_filebeat.inputs | default([]) ) + (_filebeat.default_inputs | default([])) ) | map("combine",{"close.reader.after_interval":(_filebeat.default_shipper | combine(_filebeat.shipper)).close.reader.after_interval}) | list | to_nice_yaml (indent=2, sort_keys=false) | indent(width=2, first=true) }}
+
+# =========================== Filebeat autodiscover ============================
+
+# Autodiscover allows you to detect changes in the system and spawn new modules
+# or inputs as they happen.
+
+{% set AUTODISCOVER = ( (_filebeat.autodiscover | default([])) + (_filebeat.default_autodiscover | default([])) ) %}
+{% if AUTODISCOVER|length %}
+filebeat.autodiscover:
+  providers:
+{{ AUTODISCOVER | to_nice_yaml (indent=2, sort_keys=false) | indent(width=2, first=true) }}
+{% endif %}
 
 #=========================== Filebeat processors ==============================
 # Processors work on events, created by the inputs.
-{% set PROCESSORS = ( (_filebeat.processors|default([])) + (_filebeat.default_processors|default([])) ) %}
-{% if PROCESSORS|length %}
+{% set PROCESSORS = ( (_filebeat.processors | default([])) + (_filebeat.default_processors | default([])) ) %}
+{% if PROCESSORS | length %}
 processors:
-{{ PROCESSORS|to_nice_yaml }}
+{{ PROCESSORS | to_nice_yaml (indent=2, sort_keys=false) | indent(width=2, first=true) }}
 {% endif %}
 
 
@@ -55,7 +67,7 @@ processors:
 #----------------------------- Logstash output --------------------------------
 output.logstash:
   # The Logstash hosts
-  hosts: {{ _filebeat.outputs.logstash.hosts|to_yaml }}
+  hosts: {{ _filebeat.outputs.logstash.hosts | to_yaml }}
 
   # List of root certificates for HTTPS server verifications
   ssl.certificate: "/etc/filebeat/ssl/client.crt"
