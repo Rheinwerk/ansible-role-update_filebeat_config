@@ -28,6 +28,7 @@ _filebeat:
           exclude_files:
             - '^/var/log/filebeat\.log.*$'
   default_processors: []
+  default_autodiscover: []
   shipper:
     name: "{{ ansible_hostname }}"
   processors:
