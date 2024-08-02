@@ -39,14 +39,14 @@ filebeat.inputs:
 # not delivered fully. While this can cause some log events to be lost
 # if the Logstash server wasn't available for a long time, it prevents
 # the client's disks from filling up with invisible files.
-{{ ( (_filebeat.inputs | default([]) ) + (_filebeat.default_inputs | default([])) ) | map("combine",{"close.reader.after_interval":(_filebeat.default_shipper | combine(_filebeat.shipper)).close.reader.after_interval}) | list | to_nice_yaml }}
+{{ ( (_filebeat.inputs | default([]) ) + (_filebeat.default_inputs | default([])) ) | map("combine",{"close.reader.after_interval":(_filebeat.default_shipper | combine(_filebeat.shipper)).close.reader.after_interval}) | list | to_nice_yaml (indent=2, sort_keys=false) }}
 
 #=========================== Filebeat processors ==============================
 # Processors work on events, created by the inputs.
 {% set PROCESSORS = ( (_filebeat.processors | default([])) + (_filebeat.default_processors | default([])) ) %}
 {% if PROCESSORS | length %}
 processors:
-{{ PROCESSORS | to_nice_yaml }}
+{{ PROCESSORS | to_nice_yaml (indent=2, sort_keys=false) }}
 {% endif %}
 
 
