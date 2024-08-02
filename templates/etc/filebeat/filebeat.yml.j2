@@ -58,7 +58,7 @@ filebeat.autodiscover:
 {% set PROCESSORS = ( (_filebeat.processors | default([])) + (_filebeat.default_processors | default([])) ) %}
 {% if PROCESSORS | length %}
 processors:
-{{ PROCESSORS | to_nice_yaml (indent=2, sort_keys=false) }}
+{{ PROCESSORS | to_nice_yaml (indent=2, sort_keys=false) | indent(width=2, first=true) }}
 {% endif %}
 
 
