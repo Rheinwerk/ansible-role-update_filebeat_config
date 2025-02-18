@@ -17,7 +17,7 @@ fields: {{ (_filebeat.default_shipper.fields | default({})) | combine(_filebeat.
 
 # Sets log level. The default log level is info.
 # Available log levels are: critical, error, warning, info, debug
-logging.level: info
+logging.level: {{ _filebeat.logging_level }}
 logging.to_syslog: false
 logging.to_files: true
 logging.files:

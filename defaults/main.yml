@@ -1,5 +1,6 @@
 ---
 _filebeat:
+  logging_level: warning
   outputs:
     logstash:
       hosts:
