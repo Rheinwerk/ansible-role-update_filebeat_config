@@ -31,7 +31,7 @@ _filebeat:
   default_processors: []
   default_autodiscover: []
   shipper:
-    name: "{{ ansible_hostname }}"
+    name: "{{ ansible_facts['hostname'] }}"
   processors:
     # https://www.elastic.co/guide/en/beats/libbeat/6.3/breaking-changes-6.3.html
     - drop_fields:
